@@ -1,6 +1,6 @@
 use clap::Parser;
 use futures_lite::stream::StreamExt;
-use lapin::{Result, Connection, ConnectionProperties, options::{BasicConsumeOptions, BasicAckOptions}, types::FieldTable};
+use lapin::{Result, Connection, ConnectionProperties, options::{BasicConsumeOptions, BasicAckOptions, QueueDeclareOptions}, types::FieldTable};
 use model::User;
 
 #[derive(Parser, Debug)]
@@ -23,6 +23,11 @@ fn main() -> Result<()> {
 
         let channel = conn.create_channel().await?;
         
+        let _ = channel
+            .queue_declare(
+                &args.queue_name, QueueDeclareOptions::default(), FieldTable::default(),
+            ).await?;
+
         let mut consumer = channel.basic_consume(
             &args.queue_name,
             "my_consumer",
